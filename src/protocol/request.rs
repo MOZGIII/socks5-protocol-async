@@ -5,9 +5,9 @@ use futures::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Request {
-    command: u8,
-    address: super::address::Address,
-    port: u16,
+    pub command: u8,
+    pub address: super::address::Address,
+    pub port: u16,
 }
 
 impl Request {
