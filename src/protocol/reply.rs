@@ -3,19 +3,19 @@ use super::constant;
 use futures::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Response {
-    pub response_code: u8,
+pub struct Reply {
+    pub reply_code: u8,
     pub address: Address,
     pub port: u16,
 }
 
-impl Response {
+impl Reply {
     pub async fn write<AW>(&self, writer: &mut AW) -> std::io::Result<()>
     where
         AW: AsyncWrite + Unpin,
     {
         let mut buf = Vec::with_capacity(3 + (2 + 0xFF) + 2);
-        buf.extend(&[constant::protocol_version::SOCKS5, self.response_code, 0x00]);
+        buf.extend(&[constant::protocol_version::SOCKS5, self.reply_code, 0x00]);
         self.address.write(&mut buf).await?;
         buf.extend(&self.port.to_be_bytes());
         writer.write_all(&buf).await?;
@@ -31,8 +31,8 @@ mod test {
     #[test]
     fn happy_path() {
         let mut writer = std::io::Cursor::new([0u8; 10]);
-        let res = Response {
-            response_code: 0x01,
+        let res = Reply {
+            reply_code: 0x01,
             address: Address::IPv4([127, 0, 0, 1]),
             port: 80,
         };
@@ -48,8 +48,8 @@ mod test {
     #[test]
     fn unable_to_write_whole_thing() {
         let mut writer = std::io::Cursor::new([0u8; 2]);
-        let res = Response {
-            response_code: 0x01,
+        let res = Reply {
+            reply_code: 0x01,
             address: Address::IPv4([127, 0, 0, 1]),
             port: 80,
         };

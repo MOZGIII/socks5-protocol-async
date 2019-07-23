@@ -3,17 +3,17 @@ mod constant;
 mod shared_internal;
 
 mod auth_method_negotiation_request;
-mod auth_method_negotiation_response;
+mod auth_method_negotiation_reply;
 
 mod address;
 mod request;
-mod response;
+mod reply;
 
 pub use constant::*;
 
 pub use auth_method_negotiation_request::*;
-pub use auth_method_negotiation_response::*;
+pub use auth_method_negotiation_reply::*;
 
 pub use address::*;
 pub use request::*;
-pub use response::*;
+pub use reply::*;
