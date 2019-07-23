@@ -9,9 +9,6 @@ extern crate failure;
 #[macro_use]
 extern crate futures;
 
-#[macro_use]
-extern crate enum_primitive_derive;
-
 pub mod error;
 pub mod protocol;
 

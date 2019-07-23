@@ -1,8 +1,7 @@
-use super::constant::*;
+use super::constant;
 use super::shared_internal::*;
 use failure::Error;
 use futures::prelude::*;
-use num_traits::FromPrimitive;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Address {
@@ -17,18 +16,18 @@ impl Address {
         AR: AsyncRead + Unpin,
     {
         let address_type = read_u8(reader).await?;
-        match AddressType::from_u8(address_type) {
-            Some(AddressType::IPv4) => {
+        match address_type {
+            constant::address_type::IPV4 => {
                 let mut buf = [0u8; 4];
                 reader.read_exact(buf.as_mut()).await?;
                 Ok(Address::IPv4(buf))
             }
-            Some(AddressType::IPv6) => {
+            constant::address_type::IPV6 => {
                 let mut buf = [0u8; 16];
                 reader.read_exact(buf.as_mut()).await?;
                 Ok(Address::IPv6(buf))
             }
-            Some(AddressType::DomainName) => {
+            constant::address_type::DOMAIN_NAME => {
                 let len = read_u8(reader).await?;
                 let v = read_vec(reader, len as usize).await?;
                 Ok(Address::DomainName(v))
@@ -43,19 +42,19 @@ impl Address {
     {
         match self {
             Address::IPv4(val) => {
-                let head = [AddressType::IPv4 as u8];
+                let head = [constant::address_type::IPV4];
                 writer.write_all(&head).await?;
                 writer.write_all(val).await?;
                 Ok(())
             }
             Address::IPv6(val) => {
-                let head = [AddressType::IPv6 as u8];
+                let head = [constant::address_type::IPV6];
                 writer.write_all(&head).await?;
                 writer.write_all(val).await?;
                 Ok(())
             }
             Address::DomainName(val) => {
-                let head = [AddressType::DomainName as u8, val.len() as u8];
+                let head = [constant::address_type::DOMAIN_NAME, val.len() as u8];
                 writer.write_all(&head).await?;
                 writer.write_all(val).await?;
                 Ok(())
@@ -83,7 +82,7 @@ mod test {
 
     #[test]
     fn read_ipv4_ok() {
-        let mut reader = std::io::Cursor::new(&[AddressType::IPv4 as u8, 127, 0, 0, 1]);
+        let mut reader = std::io::Cursor::new(&[constant::address_type::IPV4, 127, 0, 0, 1]);
         let future = Address::read(&mut reader);
         let result = extract_future_output(future);
         assert_eq!(result.unwrap(), Address::IPv4([127, 0, 0, 1]));
@@ -92,7 +91,7 @@ mod test {
     #[test]
     fn read_ipv6_ok() {
         let mut reader = std::io::Cursor::new(&[
-            AddressType::IPv6 as u8,
+            constant::address_type::IPV6,
             1,
             0,
             0,
@@ -121,7 +120,7 @@ mod test {
     #[test]
     fn read_domain_name_ok() {
         let mut reader = std::io::Cursor::new(&[
-            AddressType::DomainName as u8,
+            constant::address_type::DOMAIN_NAME,
             11,
             'e' as u8,
             'x' as u8,

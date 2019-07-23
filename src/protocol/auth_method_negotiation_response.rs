@@ -1,4 +1,4 @@
-use super::constant::*;
+use super::constant;
 use failure::Error;
 use futures::prelude::*;
 
@@ -12,7 +12,7 @@ impl AuthMethodNegotiationResponse {
     where
         AW: AsyncWrite + Unpin,
     {
-        let buf = [ProtocolVersion::Socks5 as u8, self.selected_method];
+        let buf = [constant::protocol_version::SOCKS5, self.selected_method];
         writer.write_all(&buf).await?;
         Ok(())
     }

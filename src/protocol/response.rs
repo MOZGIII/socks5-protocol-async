@@ -1,5 +1,5 @@
 use super::address::Address;
-use super::constant::*;
+use super::constant;
 use futures::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -15,7 +15,7 @@ impl Response {
         AW: AsyncWrite + Unpin,
     {
         let mut buf = Vec::with_capacity(3 + (2 + 0xFF) + 2);
-        buf.extend(&[ProtocolVersion::Socks5 as u8, self.response_code, 0x00]);
+        buf.extend(&[constant::protocol_version::SOCKS5, self.response_code, 0x00]);
         self.address.write(&mut buf).await?;
         buf.extend(&self.port.to_be_bytes());
         writer.write_all(&buf).await?;

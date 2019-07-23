@@ -1,4 +1,4 @@
-use super::constant::*;
+use super::constant;
 use failure::Error;
 use futures::prelude::*;
 
@@ -35,7 +35,7 @@ where
     AR: AsyncRead + Unpin,
 {
     let version = read_u8(reader).await?;
-    if version != ProtocolVersion::Socks5 as u8 {
+    if version != constant::protocol_version::SOCKS5 as u8 {
         return Err(crate::error::InvalidProtocolVersionError(version))?;
     }
     Ok(())
