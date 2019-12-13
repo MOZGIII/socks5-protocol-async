@@ -1,7 +1,7 @@
 use super::address::Address;
 use super::shared_internal::*;
 use failure::Error;
-use futures::prelude::*;
+use futures_io::AsyncRead;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Request {
@@ -34,10 +34,11 @@ impl Request {
 mod test {
     use super::*;
     use crate::test_util::*;
+    use futures_util::io::Cursor;
 
     #[test]
     fn happy_path() {
-        let mut reader = std::io::Cursor::new(&[
+        let mut reader = Cursor::new(&[
             5,    // Version
             0x01, // Command
             0x00, // Reserved octet
@@ -58,7 +59,7 @@ mod test {
 
     #[test]
     fn invalid_version() {
-        let mut reader = std::io::Cursor::new(&[1]);
+        let mut reader = Cursor::new(&[1]);
         let future = Request::read(&mut reader);
         let result = extract_future_output(future);
         let err = result.unwrap_err();
@@ -70,7 +71,7 @@ mod test {
 
     #[test]
     fn not_enough_data() {
-        let mut reader = std::io::Cursor::new(&[]);
+        let mut reader = Cursor::new(&[]);
         let future = Request::read(&mut reader);
         let result = extract_future_output(future);
         let err = result.unwrap_err();

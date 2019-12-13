@@ -1,6 +1,7 @@
 use super::constant;
 use failure::Error;
-use futures::prelude::*;
+use futures_io::AsyncWrite;
+use futures_util::AsyncWriteExt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AuthMethodNegotiationReply {
@@ -22,10 +23,12 @@ impl AuthMethodNegotiationReply {
 mod test {
     use super::*;
     use crate::test_util::*;
+    use futures_util::io::Cursor;
 
     #[test]
     fn happy_path() {
-        let mut writer = std::io::Cursor::new([0u8; 2]);
+        let mut writer = [0u8; 2];
+        let mut writer = Cursor::new(&mut writer[..]);
         let res = AuthMethodNegotiationReply {
             selected_method: 0xFF,
         };
@@ -37,7 +40,8 @@ mod test {
 
     #[test]
     fn unable_to_write_whole_thing() {
-        let mut writer = std::io::Cursor::new([0u8; 1]);
+        let mut writer = [0u8; 1];
+        let mut writer = Cursor::new(&mut writer[..]);
         let res = AuthMethodNegotiationReply {
             selected_method: 0xFF,
         };

@@ -1,6 +1,7 @@
 use super::address::Address;
 use super::constant;
-use futures::prelude::*;
+use futures_io::AsyncWrite;
+use futures_util::AsyncWriteExt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Reply {
@@ -27,10 +28,12 @@ impl Reply {
 mod test {
     use super::*;
     use crate::test_util::*;
+    use futures_util::io::Cursor;
 
     #[test]
     fn happy_path() {
-        let mut writer = std::io::Cursor::new([0u8; 10]);
+        let mut writer = [0u8; 10];
+        let mut writer = Cursor::new(&mut writer[..]);
         let res = Reply {
             reply_code: 0x01,
             address: Address::IPv4([127, 0, 0, 1]),
@@ -47,7 +50,8 @@ mod test {
 
     #[test]
     fn unable_to_write_whole_thing() {
-        let mut writer = std::io::Cursor::new([0u8; 2]);
+        let mut writer = [0u8; 2];
+        let mut writer = Cursor::new(&mut writer[..]);
         let res = Reply {
             reply_code: 0x01,
             address: Address::IPv4([127, 0, 0, 1]),

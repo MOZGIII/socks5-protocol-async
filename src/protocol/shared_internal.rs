@@ -1,6 +1,7 @@
 use super::constant;
 use failure::Error;
-use futures::prelude::*;
+use futures_io::AsyncRead;
+use futures_util::io::AsyncReadExt;
 
 pub async fn read_u8<AR>(reader: &mut AR) -> std::io::Result<u8>
 where
@@ -45,10 +46,11 @@ where
 mod test {
     use super::*;
     use crate::test_util::*;
+    use futures_util::io::Cursor;
 
     #[test]
     fn read_u8_happy_path() {
-        let mut reader = std::io::Cursor::new(&[0xFE]);
+        let mut reader = Cursor::new(&[0xFE]);
         let future = read_u8(&mut reader);
         let result = extract_future_output(future);
         assert_eq!(result.unwrap(), 0xFE)
@@ -56,7 +58,7 @@ mod test {
 
     #[test]
     fn read_u8_not_enough_data() {
-        let mut reader = std::io::Cursor::new(&[]);
+        let mut reader = Cursor::new(&[]);
         let future = read_u8(&mut reader);
         let result = extract_future_output(future);
         let err = result.unwrap_err();
@@ -65,7 +67,7 @@ mod test {
 
     #[test]
     fn read_u16_happy_path() {
-        let mut reader = std::io::Cursor::new(&[0xBE, 0xEF]);
+        let mut reader = Cursor::new(&[0xBE, 0xEF]);
         let future = read_u16(&mut reader);
         let result = extract_future_output(future);
         assert_eq!(result.unwrap(), 0xBEEF)
@@ -73,7 +75,7 @@ mod test {
 
     #[test]
     fn read_u16_not_enough_data() {
-        let mut reader = std::io::Cursor::new(&[]);
+        let mut reader = Cursor::new(&[]);
         let future = read_u16(&mut reader);
         let result = extract_future_output(future);
         let err = result.unwrap_err();
@@ -82,7 +84,7 @@ mod test {
 
     #[test]
     fn read_u16_not_enough_data_half() {
-        let mut reader = std::io::Cursor::new(&[0xBE]);
+        let mut reader = Cursor::new(&[0xBE]);
         let future = read_u16(&mut reader);
         let result = extract_future_output(future);
         let err = result.unwrap_err();
@@ -91,7 +93,7 @@ mod test {
 
     #[test]
     fn read_vec_happy_path() {
-        let mut reader = std::io::Cursor::new(&[0xBE, 0xEF]);
+        let mut reader = Cursor::new(&[0xBE, 0xEF]);
         let future = read_vec(&mut reader, 2);
         let result = extract_future_output(future);
         assert_eq!(result.unwrap(), vec![0xBE, 0xEF])
@@ -99,7 +101,7 @@ mod test {
 
     #[test]
     fn read_vec_not_enough_data() {
-        let mut reader = std::io::Cursor::new(&[]);
+        let mut reader = Cursor::new(&[]);
         let future = read_vec(&mut reader, 2);
         let result = extract_future_output(future);
         let err = result.unwrap_err();
@@ -108,7 +110,7 @@ mod test {
 
     #[test]
     fn read_vec_not_enough_data_partial() {
-        let mut reader = std::io::Cursor::new(&[0xBE]);
+        let mut reader = Cursor::new(&[0xBE]);
         let future = read_vec(&mut reader, 2);
         let result = extract_future_output(future);
         let err = result.unwrap_err();

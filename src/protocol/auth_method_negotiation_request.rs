@@ -1,6 +1,6 @@
 use super::shared_internal::*;
 use failure::Error;
-use futures::prelude::*;
+use futures_io::AsyncRead;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AuthMethodNegotiationRequest {
@@ -25,10 +25,11 @@ impl AuthMethodNegotiationRequest {
 mod test {
     use super::*;
     use crate::test_util::*;
+    use futures_util::io::Cursor;
 
     #[test]
     fn happy_path() {
-        let mut reader = std::io::Cursor::new(&[
+        let mut reader = Cursor::new(&[
             5, // Version
             2, // Auth Methods Number
             0xBE, 0xEF, // The methods
@@ -45,7 +46,7 @@ mod test {
 
     #[test]
     fn invalid_version() {
-        let mut reader = std::io::Cursor::new(&[1]);
+        let mut reader = Cursor::new(&[1]);
         let future = AuthMethodNegotiationRequest::read(&mut reader);
         let result = extract_future_output(future);
         let err = result.unwrap_err();
@@ -57,7 +58,7 @@ mod test {
 
     #[test]
     fn not_enough_data() {
-        let mut reader = std::io::Cursor::new(&[]);
+        let mut reader = Cursor::new(&[]);
         let future = AuthMethodNegotiationRequest::read(&mut reader);
         let result = extract_future_output(future);
         let err = result.unwrap_err();

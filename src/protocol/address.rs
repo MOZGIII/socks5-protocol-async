@@ -1,7 +1,8 @@
 use super::constant;
 use super::shared_internal::*;
 use failure::Error;
-use futures::prelude::*;
+use futures_io::{AsyncRead, AsyncWrite};
+use futures_util::{AsyncReadExt, AsyncWriteExt};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Address {
@@ -67,10 +68,11 @@ impl Address {
 mod test {
     use super::*;
     use crate::test_util::*;
+    use futures_util::io::Cursor;
 
     #[test]
     fn read_invalid_type() {
-        let mut reader = std::io::Cursor::new(&[0x2]);
+        let mut reader = Cursor::new(&[0x2]);
         let future = Address::read(&mut reader);
         let result = extract_future_output(future);
         let err = result.unwrap_err();
@@ -82,7 +84,7 @@ mod test {
 
     #[test]
     fn read_ipv4_ok() {
-        let mut reader = std::io::Cursor::new(&[constant::address_type::IPV4, 127, 0, 0, 1]);
+        let mut reader = Cursor::new(&[constant::address_type::IPV4, 127, 0, 0, 1]);
         let future = Address::read(&mut reader);
         let result = extract_future_output(future);
         assert_eq!(result.unwrap(), Address::IPv4([127, 0, 0, 1]));
@@ -90,7 +92,7 @@ mod test {
 
     #[test]
     fn read_ipv6_ok() {
-        let mut reader = std::io::Cursor::new(&[
+        let mut reader = Cursor::new(&[
             constant::address_type::IPV6,
             1,
             0,
@@ -119,7 +121,7 @@ mod test {
 
     #[test]
     fn read_domain_name_ok() {
-        let mut reader = std::io::Cursor::new(&[
+        let mut reader = Cursor::new(&[
             constant::address_type::DOMAIN_NAME,
             11,
             'e' as u8,
@@ -144,7 +146,8 @@ mod test {
 
     #[test]
     fn write_ipv4_ok() {
-        let mut writer = std::io::Cursor::new([0u8; 1 + 4]);
+        let mut writer = [0u8; 1 + 4];
+        let mut writer = Cursor::new(&mut writer[..]);
         let res = Address::IPv4([127, 0, 0, 1]);
         let future = res.write(&mut writer);
         let result = extract_future_output(future);
@@ -154,7 +157,8 @@ mod test {
 
     #[test]
     fn write_ipv6_ok() {
-        let mut writer = std::io::Cursor::new([0u8; 1 + 16]);
+        let mut writer = [0u8; 1 + 16];
+        let mut writer = Cursor::new(&mut writer[..]);
         let res = Address::IPv6([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF]);
         let future = res.write(&mut writer);
         let result = extract_future_output(future);
@@ -167,7 +171,8 @@ mod test {
 
     #[test]
     fn write_domain_name_ok() {
-        let mut writer = std::io::Cursor::new([0u8; 1 + 1 + 11]);
+        let mut writer = [0u8; 1 + 1 + 11];
+        let mut writer = Cursor::new(&mut writer[..]);
         let res = Address::DomainName("example.com".as_bytes().to_vec());
         let future = res.write(&mut writer);
         let result = extract_future_output(future);
