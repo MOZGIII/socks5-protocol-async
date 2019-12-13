@@ -1,3 +1,4 @@
+use futures::pin_mut;
 use futures_test::task::noop_context;
 use std::future::Future;
 use std::task::Poll;
