@@ -1,6 +1,6 @@
 [package]
 name = "socks5-protocol-async"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["MOZGIII <mike-n@narod.ru>"]
 edition = "2018"
 description = "Async I/O SOCKS5 protocol implementation"
