@@ -3,6 +3,11 @@ name = "socks5-protocol-async"
 version = "0.2.1"
 authors = ["MOZGIII <mike-n@narod.ru>"]
 edition = "2018"
+description = "Async I/O SOCKS5 protocol implementation"
+keywords = ["socks", "socks5", "async", "protocol"]
+categories = ["network-programming"]
+license = "MIT"
+repository = "https://github.com/MOZGIII/socks5-protocol-async"
 
 [dependencies]
 futures-io = "0.3"
