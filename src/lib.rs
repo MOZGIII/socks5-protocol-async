@@ -1,6 +1,5 @@
 #![warn(rust_2018_idioms)]
 #![forbid(unsafe_code)]
-#![feature(async_await)]
 
 #[macro_use]
 extern crate failure;
